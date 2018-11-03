@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="UTF-8">
+  <meta name="description" content="Score Card for Cricket">
+  <meta name="keywords" content="cricket,score,batting,bowling,scorecard,cric,match">
+  <meta name="author" content="Ramesh Babu Poludasu">
+  <meta name="email" content="rameshbabuiiit@gmail.com">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cricket Score</title>
+<script>
+
+function startIng1(){
+	clearStorage();
+	startOver();
+	document.getElementById("ing").innerHTML = "innings1";
+	document.getElementById("notify").innerHTML = "Innings1 Started!";
+	localStorage.setItem("innings","innings1");
+}
+
+function startIng2(){
+	var ing = document.getElementById("ing").innerHTML;
+	if(ing ==="innings1"){
+		saveIng1();
+	}else{
+	  clearIng2();
+	  clearLocal();
+	}
+	localStorage.setItem("innings","innings2");
+	document.getElementById("ing").innerHTML = "innings2";
+	startOver();
+	document.getElementById("notify").innerHTML = "Innings 2 started!";
+}
+
+function startOver(){
+	document.getElementById("ballByBall").innerHTML ="[1] : ";
+	document.getElementById("overNum").innerHTML="0";
+	document.getElementById("curOver").innerHTML="0" ;
+	document.getElementById("totScore").innerHTML=document.getElementById("initScore").value;
+}
+
+function saveIng1(){
+	if (typeof(Storage) !== "undefined") {
+		localStorage.setItem("ballByBall1", document.getElementById("ballByBall").innerHTML );
+		localStorage.setItem("overNum1", document.getElementById("overNum").innerHTML);
+		localStorage.setItem("curOver1", document.getElementById("curOver").innerHTML);
+		localStorage.setItem("totScore1", document.getElementById("totScore").innerHTML);
+		document.getElementById("notify").innerHTML = "Innings1 data saved!";
+	} else {
+	   document.getElementById("notify").innerHTML = "No Web Storage supported in this browser!";
+	}
+}
+
+function saveIng2(){
+	if (typeof(Storage) !== "undefined") {
+		localStorage.setItem("ballByBall2", document.getElementById("ballByBall").innerHTML );
+		localStorage.setItem("overNum2", document.getElementById("overNum").innerHTML);
+		localStorage.setItem("curOver2", document.getElementById("curOver").innerHTML);
+		localStorage.setItem("totScore2", document.getElementById("totScore").innerHTML);
+		document.getElementById("notify").innerHTML = "Innings2 data saved!";
+	} else {
+	   //alert("No Web Storage supported in this browser!");
+	   document.getElementById("notify").innerHTML = "No Web Storage supported in this browser!";
+	}
+}
+
+function saveIng(){
+	var ing = document.getElementById("ing").innerHTML;
+	if(ing ==="innings1"){
+		saveIng1();
+	}else if(ing ==="innings2"){
+		saveIng2();
+	} else{
+		//alert("Please start an innings!");
+	   document.getElementById("notify").innerHTML = "Please start an innings!";
+	}
+}
+
+ function handleOver(runs){
+		var ballByBall = document.getElementById("ballByBall").innerHTML;
+		
+		if(runs==="Nb"){
+			var xtras = document.getElementById("nbExtras").value;
+			ballByBall = ballByBall+(runs+xtras+",");
+			runs = 1 +(+xtras);
+		}else if(runs=="Wd"){
+			ballByBall = ballByBall+runs+",";
+			runs = 1;
+		}else if(runs==="Wkt"){
+			var wRuns = document.getElementById("wkRuns").value;
+				ballByBall = ballByBall+runs+wRuns+"|";
+				runs = 0+(+wRuns);
+		}else{
+			ballByBall = ballByBall+runs+"|";
+		}
+      var curOver = document.getElementById("curOver").innerHTML;
+	  var totScore = document.getElementById("totScore").innerHTML;
+	  curOver = (+curOver) + (+runs);
+	  var thisover = ballByBall.substring(ballByBall.lastIndexOf(":") + 1,);
+	  document.getElementById("overNum").innerHTML =(ballByBall.split(":").length - 2)+"."+(thisover.split("|").length - 1)%6;
+	  document.getElementById("curOver").innerHTML = curOver.toString();
+	  totScore = (+totScore) + (+runs);
+	  document.getElementById("totScore").innerHTML = totScore.toString();
+	  document.getElementById("ballByBall").innerHTML = ballByBall;
+	  document.getElementById("notify").innerHTML = "This Over:"+thisover;
+	  if((thisover.split("|").length - 1)==6){
+		nextOver();
+	  }
+	  saveLocal();
+}
+
+ function nextOver(){
+	var curOverNum = document.getElementById("overNum").innerHTML;
+	document.getElementById("notify").innerHTML = "curOverNum:"+curOverNum;
+	ballByBall = document.getElementById("ballByBall").innerHTML ;
+	var curOver = document.getElementById("curOver").innerHTML;
+	nxtOver= Math.floor(curOverNum)+1;
+	document.getElementById("overNum").innerHTML = (nxtOver).toString();
+	document.getElementById("ballByBall").innerHTML = ballByBall+"="+curOver+"<br>["+(nxtOver+1)+"] : ";
+	document.getElementById("curOver").innerHTML = "0";
+	//saveLocal();
+	saveIng();
+	document.getElementById("notify").innerHTML = (+nxtOver)+" overs completed!";
+	return false;
+ }
+ 
+ function initScript(){
+ var date= getDate();
+  document.getElementById("date").innerHTML = date;
+  if(localStorage.getItem("innings")==="innings2"){
+		loadIng2();
+		setIng("2");
+  }else{
+	loadIng1();
+	setIng("1");
+  }
+  retrieveScore();
+ }
+function setIng(i){
+		document.getElementById("ing").innerHTML = "innings"+i;
+ }
+ 
+ function retrieveScore(){
+	 if(localStorage.getItem("totScore") != null){
+		 document.getElementById("ballByBall").innerHTML = localStorage.getItem("ballByBall");
+		 document.getElementById("overNum").innerHTML = localStorage.getItem("overNum");
+		 document.getElementById("curOver").innerHTML = localStorage.getItem("curOver");
+		 document.getElementById("totScore").innerHTML = localStorage.getItem("totScore");
+	 }
+ }
+ 
+ function getDate(){
+	var today = new Date();
+	var dd = today.getDate();
+	var mm = today.getMonth()+1; //January is 0!
+	var yyyy = today.getFullYear();
+	if(dd<10) {
+		dd = '0'+dd
+	} 
+	if(mm<10) {
+		mm = '0'+mm
+	} 
+	today = mm + '/' + dd + '/' + yyyy;
+	return today;
+}
+
+
+
+function saveLocal(){
+	if (typeof(Storage) !== "undefined") {
+		localStorage.setItem("ballByBall", document.getElementById("ballByBall").innerHTML );
+		localStorage.setItem("overNum", document.getElementById("overNum").innerHTML);
+		localStorage.setItem("curOver", document.getElementById("curOver").innerHTML);
+		localStorage.setItem("totScore", document.getElementById("totScore").innerHTML);
+	} else {
+	   //alert("No Web Storage supported in this browser!");
+	   document.getElementById("notify").innerHTML = "No Web Storage supported in this browser!";
+	}
+}
+
+function clearLocal(){
+	localStorage.removeItem("ballByBall");
+	localStorage.removeItem("overNum");
+	localStorage.removeItem("curOver");
+	localStorage.removeItem("totScore");
+}
+
+function clearStorage(){
+	localStorage.removeItem("ballByBall");
+	localStorage.removeItem("overNum");
+	localStorage.removeItem("curOver");
+	localStorage.removeItem("totScore");
+	localStorage.removeItem("innings");
+	clearIng1();
+	clearIng2();
+	startOver();
+	document.getElementById("ing").innerHTML = "innings1";
+	document.getElementById("notify").innerHTML  = "All local storage has has been removed!"
+}
+
+function clearIng1(){
+	localStorage.removeItem("ballByBall1");
+	localStorage.removeItem("overNum1");
+	localStorage.removeItem("curOver1");
+	localStorage.removeItem("totScore1");
+}
+
+function clearIng2(){
+	localStorage.removeItem("ballByBall2");
+	localStorage.removeItem("overNum2");
+	localStorage.removeItem("curOver2");
+	localStorage.removeItem("totScore2");
+}
+
+function loadIng1(){
+	document.getElementById("ing").innerHTML = "innings1";
+	if(localStorage.getItem("totScore1") != null){
+		 document.getElementById("ballByBall").innerHTML = localStorage.getItem("ballByBall1");
+		 document.getElementById("overNum").innerHTML = localStorage.getItem("overNum1");
+		 document.getElementById("curOver").innerHTML = localStorage.getItem("curOver1");
+		 document.getElementById("totScore").innerHTML = localStorage.getItem("totScore1");
+		 document.getElementById("notify").innerHTML  = "Innings 1 Score Retrieved!"
+	 } else{
+		document.getElementById("notify").innerHTML  = "Sorry!! No Storage found for innings1!"
+	 }
+}
+
+function loadIng2(){
+	document.getElementById("ing").innerHTML = "innings2";
+	if(localStorage.getItem("totScore2") != null){
+		 document.getElementById("ballByBall").innerHTML = localStorage.getItem("ballByBall2");
+		 document.getElementById("overNum").innerHTML = localStorage.getItem("overNum2");
+		 document.getElementById("curOver").innerHTML = localStorage.getItem("curOver2");
+		 document.getElementById("totScore").innerHTML = localStorage.getItem("totScore2");
+		 document.getElementById("notify").innerHTML  = "Innings 2 Score Retrieved!"
+	 } else{
+		document.getElementById("notify").innerHTML  = "Sorry!! No Storage found for innings2!"
+	 }
+}
+function getShareText(){
+	var score = document.getElementById("totScore").innerHTML;
+	var overs = document.getElementById("overNum").innerHTML;
+	var bByb = document.getElementById("ballByBall").innerHTML;
+	bByb = bByb.replace(/<br>/g,'\r\n');
+	var msg = "*[Cricket Score Card] -* "+getDate()+"\r\n\r\n*Total Score :* "+score+"\r\n*Overs :* "+overs+"\r\n*Ball By Ball :*\r\n"+bByb;
+	//alert(bByb);
+	var uri = "whatsapp://send?text="+msg;
+	location.href =	encodeURI(uri);
+	return true;
+}
+</script>
+<style>
+body {
+    background-color: lightgreen;
+}
+.button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    margin: 4px 4px;
+    cursor: pointer;
+}
+.button:hover {
+    background-color: red;
+    -webkit-animation-name: example; /* Safari 4.0 - 8.0 */
+    -webkit-animation-duration: 4s; /* Safari 4.0 - 8.0 */
+    animation-name: example;
+    animation-duration: 4s;
+}
+@keyframes example {
+    from {background-color: red;}
+    to {background-color: blue;}
+}
+
+.table1 {
+   border-collapse: collapse;
+  width: 100%;
+  border: 2px solid #ddd;
+}
+
+.table1 th, td {
+    text-align: left;
+    padding: 8px;
+}
+
+.table1 tr:nth-child(even){background-color: #f2f2f2}
+
+h2{
+	background:teal;
+	border: 1px solid red;
+    color: white;
+    margin:auto;
+	position:fixed;
+}
+
+#totScore{
+font-size:40px;
+}
+input[type=text] {
+    padding: 0;
+    height: 30px;
+	width:50px;
+    position: relative;
+	text-align:center;
+    outline: none;
+    border: 1px solid #cdcdcd;
+    border-color: rgba(0,0,0,.15);
+    background-color: lightblue;
+    font-size: 16px;
+}
+#notify{
+color: green;
+font-size:20px;
+padding-left:20px;	
+}
+</style>
+</head>
+<body onload="initScript();">
+
+<h2>Gully Cricket - <b id="ing">innings1</b>  [<b id="date"></b>] </h2>
+<br><br><br><br><br>
+<div style="overflow-x:auto;">
+<table border="1px" align="center">
+<tr><td><input type="text" id="nbExtras" value="0" placeholder="0"/><b>+</b><button class="button" type="button" value="Nb" onClick="handleOver(this.value)">Nb</button></td>
+<td><button class="button" type="button" value="Wd" onClick="handleOver(this.value)">Wd</button></td>
+<td><button class="button" type="button" value="0" onClick="handleOver(this.value)">Dot</button></td>
+</tr>
+<tr><td><input type="text" id="wkRuns" value="0" placeholder="0"/><b>+</b><button class="button" type="button" value="Wkt" onClick="handleOver(this.value)">Wkt</button></td>
+<td><button class="button" type="button" value="1" onClick="handleOver(this.value)">1</button></td>
+<td><button class="button" type="button" value="2" onClick="handleOver(this.value)">2</button></td></tr>
+<tr><td><button class="button" type="button" value="3" onClick="handleOver(this.value)">3</button></td>
+<td><button class="button" type="button" value="4" onClick="handleOver(this.value)">4</button></td>
+<td><button class="button" type="button" value="6" onClick="handleOver(this.value)">6</button></td></tr>
+<tr><td><button class="button" type="button" value="0" onClick="nextOver()">Next Over</button></td><td><button class="button" type="button" value="0" onClick="saveIng()">Save</button></td>
+<td><a id="wappLink" href="#" data-action="share/whatsapp/share" onClick="getShareText(); return false;"><button class="button" type="button">Share</button></a></td>
+</tr>
+</table>
+</div>
+<br>
+<div style="overflow-x:auto;">
+<b id="notify">Notifications!</b>
+<table border="3px 3px" class="table1">
+<tr><td><b>Overs - <i id="overNum">0</i></b></td><td><i id="curOver">0</i></td></tr>
+<tr><td><b>Total Score</b></td><td><b><i id="totScore">0</i></b></td></tr>
+<tr><td><b>Ball By Ball</b></td><td><i id="ballByBall">[1] : </i></td></tr>
+</table>
+</div>
+<div>
+<br><br>
+<div style="overflow-x:auto;">
+<table border="3px 3px" class="table2">
+<tr ><td rowspan="2"><input type="text" id="initScore" placeholder="0" value="0"/></td><td><button class="button" type="button" value="0" onClick="startIng1()">Start Inng 1</button></td><td><button class="button" type="button" value="0" onClick="loadIng1()">Load Inng 1</button></td></tr>
+<tr><td><button class="button" type="button" value="0" onClick="startIng2()">Start Inng 2</button></td><td><button class="button" type="button" value="0" onClick="loadIng2()">Load Inng 2</button></td></td></tr>
+<tr><td colspan="3"><button class="button" type="button" value="0" onClick="clearStorage()">Clear Storage</button></td></tr>
+</table>
+</div>
+<div>
+<p>&copy; All Rights Reserved - 2018 <a href="mailto:rameshbabuiiit@gmail.com?Subject=Cricket Score Card" target="_top">rameshbabuiiit@gmail.com</a></p>
+</div>
+</body>
+</html>
