@@ -110,6 +110,7 @@ function saveIng(){
 }
 
  function nextOver(){
+	alert("Over Complete!");
 	var curOverNum = document.getElementById("overNum").innerHTML;
 	document.getElementById("notify").innerHTML = "curOverNum:"+curOverNum;
 	ballByBall = document.getElementById("ballByBall").innerHTML ;
@@ -225,6 +226,8 @@ function loadIng1(){
 	 }
 }
 
+
+
 function loadIng2(){
 	document.getElementById("ing").innerHTML = "innings2";
 	if(localStorage.getItem("totScore2") != null){
@@ -237,17 +240,144 @@ function loadIng2(){
 		document.getElementById("notify").innerHTML  = "Sorry!! No Storage found for innings2!"
 	 }
 }
+
+
 function getShareText(){
 	var score = document.getElementById("totScore").innerHTML;
 	var overs = document.getElementById("overNum").innerHTML;
 	var bByb = document.getElementById("ballByBall").innerHTML;
 	bByb = bByb.replace(/<br>/g,'\r\n');
 	var msg = "*[Cricket Score Card] -* "+getDate()+"\r\n\r\n*Total Score :* "+score+"\r\n*Overs :* "+overs+"\r\n*Ball By Ball :*\r\n"+bByb;
-	//alert(bByb);
 	var uri = "whatsapp://send?text="+msg;
 	location.href =	encodeURI(uri);
 	return true;
 }
+
+function undoLastBall(){
+	if( document.getElementById("overNum").innerHTML < 0.1 && document.getElementById("totScore").innerHTML<=0)  {
+		alert("Not Valid Request! Click on start innings!");
+		document.getElementById("notify").innerHTML = "Reached beginning of the innings! Please click on start Innings!";
+		return;
+	}
+
+
+	var ballByBallStr = document.getElementById("ballByBall").innerHTML ;
+	var lastPipeIdx = ballByBallStr.lastIndexOf("|");
+	var lastCommaIdx = ballByBallStr.lastIndexOf(",");
+	var endSymbolIdx = -1;
+	var startSymbolIdx = -1;
+	var endScoreIdx = -1;
+	if(lastPipeIdx >lastCommaIdx){
+		endSymbolIdx = lastPipeIdx;
+	 }
+	else {
+		endSymbolIdx = lastCommaIdx;
+	}
+	var endSymbolIdx1 = endSymbolIdx;
+	while(endSymbolIdx1>=0){
+		
+		endSymbolIdx1 = endSymbolIdx1-1;
+		if(ballByBallStr[endSymbolIdx1] === "|"){
+			startSymbolIdx = endSymbolIdx1;
+			endScoreIdx = startSymbolIdx+1;
+			break;
+		}else if(ballByBallStr[endSymbolIdx1] === ","){
+			startSymbolIdx = endSymbolIdx1;
+			endScoreIdx = startSymbolIdx+1;
+			break;
+		}else if(ballByBallStr[endSymbolIdx1] === " " && ballByBallStr[endSymbolIdx1-1] === ":"){
+			startSymbolIdx = endSymbolIdx1;
+			endScoreIdx = startSymbolIdx;
+			break;
+		}
+	}
+	var undoStr = ballByBallStr.slice(startSymbolIdx+1,endSymbolIdx);
+	var overBorderIdx = undoStr.lastIndexOf(":");
+	//alert("overBorderIdx:"+overBorderIdx);
+	if(overBorderIdx !== -1){
+	 undoStr = undoStr.substring(overBorderIdx+1,undoStr.length);
+	}
+	//alert("undoStr" + undoStr);
+	var lessScore = calcUndoRuns(undoStr);
+	var lessBalls = calcUndoBalls(undoStr);
+	undoOperation(lessScore,endScoreIdx,lessBalls);
+	var d = new Date();
+	document.getElementById("notify").innerHTML = "Undone last ball at " + d.toLocaleTimeString();
+
+}
+
+function calcUndoRuns(lastScoreStr){
+	var lessScore = 0;
+	var len = lastScoreStr.length;
+	 if(lastScoreStr.startsWith("Wkt") && len>3){
+		lessScore = lessScore+ Number(lastScoreStr.substr(3,len));
+	 } else if(lastScoreStr.startsWith("Nb") && len>2){
+		lessScore = lessScore+1+Number(lastScoreStr.substr(2,len));
+	 }else if(lastScoreStr.startsWith("Wd")){
+		lessScore = lessScore+1;
+	 }else {
+		lessScore = (lessScore) + Number(lastScoreStr);
+	 }	 
+	 //alert("UndoScore:"+lessScore);
+	 return lessScore;
+}
+
+function calcUndoBalls(lastScoreStr){
+	var lessBalls = 0;
+	var len = lastScoreStr.length;
+	 if(lastScoreStr.startsWith("Wkt") && len>3){
+		lessBalls = 1;
+	 } else if(lastScoreStr.startsWith("Nb") && len>2){
+		lessBalls = 0;
+	 }else if(lastScoreStr.startsWith("Wd")){
+		lessBalls = 0;
+	 }else {
+		lessBalls = 1;
+	 }	 
+	 //alert("lessBalls:"+lessBalls);
+	 return lessBalls;
+}
+
+function undoOperation(lessScore,startIdx,lessBalls){
+	//undoScore
+	var ballByball = document.getElementById("ballByBall").innerHTML;
+	document.getElementById("ballByBall").innerHTML = ballByball.substring(0,startIdx) ;
+
+	//reduce from total Score
+	var totScore = document.getElementById("totScore").innerHTML;
+	document.getElementById("totScore").innerHTML = totScore-lessScore;
+	
+	//reduce from current Over Score
+	var curOverScore = document.getElementById("curOver").innerHTML-lessScore;
+	/*if(curOverScore<0){
+		curOverScore = 0;
+	}*/
+	document.getElementById("curOver").innerHTML = curOverScore;
+	//alert("lessBalls:"+lessBalls);
+	if(lessBalls>0){
+		var curOver = document.getElementById("overNum").innerHTML;
+		//alert("curOver"+curOver);
+		var decimalDot = curOver.lastIndexOf(".");
+		if(decimalDot == -1){
+		 decimal = 0;
+		}else{
+			decimal =  curOver.substring(decimalDot,curOver.length);
+		}
+		 
+		//alert("decimal:"+decimal);
+		if(decimal == 0){
+		var prevScore=ballByball.slice(ballByball.lastIndexOf("=")+1,ballByball.lastIndexOf("<"));	
+		//alert("prevScore"+prevScore);
+		curOver = curOver-1 + 0.5;
+		document.getElementById("curOver").innerHTML = prevScore-lessScore;
+			
+		}else{
+			curOver = (curOver-0.1).toFixed(1);
+		}
+		document.getElementById("overNum").innerHTML = curOver;
+	}
+}
+
 </script>
 <style>
 body {
@@ -336,8 +466,10 @@ padding-left:20px;
 <tr><td><button class="button" type="button" value="3" onClick="handleOver(this.value)">3</button></td>
 <td><button class="button" type="button" value="4" onClick="handleOver(this.value)">4</button></td>
 <td><button class="button" type="button" value="6" onClick="handleOver(this.value)">6</button></td></tr>
-<tr><td><button class="button" type="button" value="0" onClick="nextOver()">Next Over</button></td><td><button class="button" type="button" value="0" onClick="saveIng()">Save</button></td>
-<td><a id="wappLink" href="#" data-action="share/whatsapp/share" onClick="getShareText(); return false;"><button class="button" type="button">Share</button></a></td>
+<tr><td><button class="button" type="button" value="0" onClick="saveIng()">Save</button></td>
+<!-- <td><a id="wappLink" href="#" data-action="share/whatsapp/share" onClick="getShareText(); return false;"><button class="button" type="button">Share</button></a></td> !-->
+<td><button class="button" type="button" value="0" onClick="undoLastBall()">Undo</button></td>
+
 </tr>
 </table>
 </div>
@@ -345,7 +477,7 @@ padding-left:20px;
 <div style="overflow-x:auto;">
 <b id="notify">Notifications!</b>
 <table border="3px 3px" class="table1">
-<tr><td><b>Overs - <i id="overNum">0</i></b></td><td><i id="curOver">0</i></td></tr>
+<tr><td><b>Overs - <i id="overNum">0</i></b></td><td><b>Current Over - <i id="curOver">0</i></b></td></tr>
 <tr><td><b>Total Score</b></td><td><b><i id="totScore">0</i></b></td></tr>
 <tr><td><b>Ball By Ball</b></td><td><i id="ballByBall">[1] : </i></td></tr>
 </table>
@@ -356,7 +488,7 @@ padding-left:20px;
 <table border="3px 3px" class="table2">
 <tr ><td rowspan="2"><input type="text" id="initScore" placeholder="0" value="0"/></td><td><button class="button" type="button" value="0" onClick="startIng1()">Start Inng 1</button></td><td><button class="button" type="button" value="0" onClick="loadIng1()">Load Inng 1</button></td></tr>
 <tr><td><button class="button" type="button" value="0" onClick="startIng2()">Start Inng 2</button></td><td><button class="button" type="button" value="0" onClick="loadIng2()">Load Inng 2</button></td></td></tr>
-<tr><td colspan="3"><button class="button" type="button" value="0" onClick="clearStorage()">Clear Storage</button></td></tr>
+<tr><td colspan="2"><button class="button" type="button" value="0" onClick="nextOver()">Next Over</button></td><td colspan="1"><button class="button" type="button" value="0" onClick="clearStorage()">Clear Storage</button></td></tr>
 </table>
 </div>
 <div>
