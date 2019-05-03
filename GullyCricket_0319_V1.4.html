@@ -254,13 +254,12 @@ function getShareText(){
 }
 
 function undoLastBall(){
+
 	if( document.getElementById("overNum").innerHTML < 0.1 && document.getElementById("totScore").innerHTML<=0)  {
 		alert("Not Valid Request! Click on start innings!");
 		document.getElementById("notify").innerHTML = "Reached beginning of the innings! Please click on start Innings!";
 		return;
 	}
-
-
 	var ballByBallStr = document.getElementById("ballByBall").innerHTML ;
 	var lastPipeIdx = ballByBallStr.lastIndexOf("|");
 	var lastCommaIdx = ballByBallStr.lastIndexOf(",");
@@ -301,8 +300,10 @@ function undoLastBall(){
 	var lessScore = calcUndoRuns(undoStr);
 	var lessBalls = calcUndoBalls(undoStr);
 	undoOperation(lessScore,endScoreIdx,lessBalls);
+	saveLocal();
 	var d = new Date();
 	document.getElementById("notify").innerHTML = "Undone last ball at " + d.toLocaleTimeString();
+	
 
 }
 
@@ -466,9 +467,9 @@ padding-left:20px;
 <tr><td><button class="button" type="button" value="3" onClick="handleOver(this.value)">3</button></td>
 <td><button class="button" type="button" value="4" onClick="handleOver(this.value)">4</button></td>
 <td><button class="button" type="button" value="6" onClick="handleOver(this.value)">6</button></td></tr>
-<tr><td><button class="button" type="button" value="0" onClick="saveIng()">Save</button></td>
+ <tr><!--<td><button class="button" type="button" value="0" onClick="saveIng()">Save</button></td> --!>
 <!-- <td><a id="wappLink" href="#" data-action="share/whatsapp/share" onClick="getShareText(); return false;"><button class="button" type="button">Share</button></a></td> !-->
-<td><button class="button" type="button" value="0" onClick="undoLastBall()">Undo</button></td>
+<td colspan="3"><button class="button" type="button" value="0" onClick="undoLastBall()" >Undo Last Ball</button></td>
 
 </tr>
 </table>
